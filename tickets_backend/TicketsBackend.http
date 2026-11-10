@@ -1,0 +1,64 @@
+@host = http://localhost:5193
+# Cole aqui o token retornado pelo login
+@token = COLE_O_TOKEN_AQUI
+
+### Login (admin/admin123 ou usuario/usuario123)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "login": "admin", "password": "admin123" }
+
+### Usuário logado
+GET {{host}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Listar chamados (filtros opcionais: date, departmentId [admin], status, priority, itemName)
+GET {{host}}/api/tickets?status=1&priority=3&itemName=impressora
+Authorization: Bearer {{token}}
+
+### Criar chamado
+POST {{host}}/api/tickets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "departmentId": 1,
+  "itemName": "Impressora HP",
+  "description": "Não está imprimindo",
+  "priority": 3,
+  "equipmentTag": "PAT-0001",
+  "tagIds": [2, 3]
+}
+
+### Alterar status (admin) - 2 = Em andamento, 3 = Finalizado
+PATCH {{host}}/api/tickets/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": 2 }
+
+### Cancelar chamado (apenas se Aberto)
+DELETE {{host}}/api/tickets/1
+Authorization: Bearer {{token}}
+
+### Departamentos
+GET {{host}}/api/departments
+Authorization: Bearer {{token}}
+
+### Criar departamento (admin)
+POST {{host}}/api/departments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Compras", "color": "#43A047" }
+
+### Tags
+GET {{host}}/api/tags
+Authorization: Bearer {{token}}
+
+### Criar tag (admin)
+POST {{host}}/api/tags
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Impressora", "color": "#E53935" }
