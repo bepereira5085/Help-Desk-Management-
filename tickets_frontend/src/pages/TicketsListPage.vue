@@ -81,21 +81,26 @@
 
             <!-- Filtros exclusivos do administrador -->
             <template v-if="auth.isAdmin">
-              <div class="col-12 col-sm-6 col-md-4">
-                <div class="filter-label">Data de abertura</div>
+              <!-- Período de abertura: dois campos de data (Início em / Término em) -->
+              <div v-for="field in dateFields" :key="field.key" class="col-12 col-sm-6 col-md-4">
                 <q-input
-                  v-model="filters.date"
+                  v-model="filters[field.key]"
                   outlined
                   dense
                   clearable
                   readonly
-                  placeholder="Qualquer data"
+                  :placeholder="field.label"
                 >
                   <template #prepend>
                     <q-icon name="event" class="cursor-pointer" />
                   </template>
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="filters.date" mask="DD/MM/YYYY" today-btn>
+                    <q-date
+                      v-model="filters[field.key]"
+                      mask="DD/MM/YYYY"
+                      :options="field.options"
+                      today-btn
+                    >
                       <div class="row justify-end">
                         <q-btn v-close-popup label="OK" color="primary" flat />
                       </div>
@@ -105,12 +110,12 @@
               </div>
 
               <div class="col-12 col-sm-6 col-md-4">
-                <div class="filter-label">Setor</div>
                 <q-select
                   v-model="filters.departmentId"
                   :options="catalog.departments"
                   option-value="id"
                   option-label="name"
+                  label="Setor"
                   emit-value
                   map-options
                   outlined
@@ -236,7 +241,8 @@ const DEFAULT_FILTERS = {
   itemName: '',
   status: 0,
   priority: 0,
-  date: null,
+  startDate: null,
+  endDate: null,
   departmentId: null
 }
 
@@ -252,7 +258,7 @@ const actionColor = computed(() => ($q.dark.isActive ? 'white' : 'primary'))
 
 const hasFilters = computed(
   () =>
-    !!filters.itemName || !!filters.status || !!filters.priority || !!filters.date || !!filters.departmentId
+    !!filters.itemName || !!filters.status || !!filters.priority || !!filters.startDate || !!filters.endDate || !!filters.departmentId
 )
 
 const stats = computed(() => {
@@ -278,6 +284,26 @@ const priorityChartItems = computed(() =>
     .map(({ label, value, color }) => ({ label, value: countBy('priority', value), color }))
 )
 
+// 'DD/MM/YYYY' (campo) -> 'YYYY-MM-DD' (API) ou 'YYYY/MM/DD' (opções do q-date)
+function toApiDate(value, separator = '-') {
+  const [day, month, year] = value.split('/')
+  return [year, month, day].join(separator)
+}
+
+// O início não pode ser depois do término, e vice-versa
+const dateFields = [
+  {
+    key: 'startDate',
+    label: 'Início em',
+    options: (date) => !filters.endDate || date <= toApiDate(filters.endDate, '/')
+  },
+  {
+    key: 'endDate',
+    label: 'Término em',
+    options: (date) => !filters.startDate || date >= toApiDate(filters.startDate, '/')
+  }
+]
+
 function buildParams() {
   const params = {}
   if (filters.itemName) params.itemName = filters.itemName
@@ -285,10 +311,8 @@ function buildParams() {
   if (filters.priority) params.priority = filters.priority
   if (auth.isAdmin) {
     if (filters.departmentId) params.departmentId = filters.departmentId
-    if (filters.date) {
-      const [day, month, year] = filters.date.split('/')
-      params.date = `${year}-${month}-${day}`
-    }
+    if (filters.startDate) params.startDate = toApiDate(filters.startDate)
+    if (filters.endDate) params.endDate = toApiDate(filters.endDate)
   }
   return params
 }

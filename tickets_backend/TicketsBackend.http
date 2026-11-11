@@ -12,7 +12,7 @@ Content-Type: application/json
 GET {{host}}/api/auth/me
 Authorization: Bearer {{token}}
 
-### Listar chamados (filtros opcionais: date, departmentId [admin], status, priority, itemName)
+### Listar chamados (filtros opcionais: startDate e endDate [admin, yyyy-MM-dd], departmentId [admin], status, priority, itemName)
 GET {{host}}/api/tickets?status=1&priority=3&itemName=impressora
 Authorization: Bearer {{token}}
 

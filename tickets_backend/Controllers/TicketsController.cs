@@ -22,11 +22,12 @@ public class TicketsController : ControllerBase
 
     /// <summary>
     /// Lista chamados ordenados por prioridade (Urgente → Baixa) e, depois, data (mais recente primeiro). Usuário comum vê apenas os seus;
-    /// admin vê todos e pode filtrar também por data e setor.
+    /// admin vê todos e pode filtrar também por período de abertura (startDate/endDate, inclusivos) e setor.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<TicketResponse>>> GetAll(
-        [FromQuery] DateTime? date,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
         [FromQuery] int? departmentId,
         [FromQuery] TicketStatus? status,
         [FromQuery] TicketPriority? priority,
@@ -36,11 +37,17 @@ public class TicketsController : ControllerBase
 
         if (User.IsAdmin())
         {
-            if (date.HasValue)
+            // Período inclusivo: do início de startDate até o fim de endDate
+            if (startDate.HasValue)
             {
-                var start = date.Value.Date;
-                var end = start.AddDays(1);
-                query = query.Where(t => t.CreatedAt >= start && t.CreatedAt < end);
+                var start = startDate.Value.Date;
+                query = query.Where(t => t.CreatedAt >= start);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endExclusive = endDate.Value.Date.AddDays(1);
+                query = query.Where(t => t.CreatedAt < endExclusive);
             }
 
             if (departmentId.HasValue)
