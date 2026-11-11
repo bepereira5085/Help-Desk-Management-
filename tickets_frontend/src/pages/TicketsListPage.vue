@@ -25,6 +25,16 @@
         </div>
       </div>
 
+      <!-- Gráficos (todos os chamados visíveis ao usuário, sem filtros e sem paginação) -->
+      <div class="row q-col-gutter-md q-mb-lg">
+        <div class="col-12 col-md-6">
+          <DonutChart title="Chamados por status" :items="statusChartItems" />
+        </div>
+        <div class="col-12 col-md-6">
+          <DonutChart title="Chamados por prioridade" :items="priorityChartItems" />
+        </div>
+      </div>
+
       <!-- Filtros -->
       <q-card flat bordered class="q-mb-lg">
         <q-card-section>
@@ -185,6 +195,7 @@ import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalogStore } from '@/stores/catalog'
+import DonutChart from '@/components/DonutChart.vue'
 import ListPagination from '@/components/ListPagination.vue'
 import StatCard from '@/components/StatCard.vue'
 import TicketCard from '@/components/TicketCard.vue'
@@ -251,6 +262,21 @@ const stats = computed(() => {
   })
   return result
 })
+
+function countBy(field, value) {
+  return statsSource.value.filter((t) => t[field] === value).length
+}
+
+const statusChartItems = computed(() =>
+  statusOptions.map(({ label, value, color }) => ({ label, value: countBy('status', value), color }))
+)
+
+// Urgente → Baixa
+const priorityChartItems = computed(() =>
+  toOptions(PRIORITY)
+    .reverse()
+    .map(({ label, value, color }) => ({ label, value: countBy('priority', value), color }))
+)
 
 function buildParams() {
   const params = {}
