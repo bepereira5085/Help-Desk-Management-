@@ -21,6 +21,64 @@
           <q-inner-loading :showing="loading" />
 
           <div class="row q-col-gutter-md">
+            <!-- Data e Status: informativos na abertura; o admin altera o status ao editar -->
+            <div class="col-12 col-sm-6">
+              <q-input
+                :model-value="createdAtLabel"
+                readonly
+                outlined
+                stack-label
+                label="Data"
+                :hint="isEdit ? undefined : 'Preenchida automaticamente'"
+              >
+                <template #prepend><q-icon name="event" /></template>
+              </q-input>
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <q-select
+                v-if="isEdit && auth.isAdmin"
+                v-model="form.status"
+                :options="statusOptions"
+                emit-value
+                map-options
+                outlined
+                label="Status"
+              >
+                <template #prepend>
+                  <q-icon name="circle" :style="{ color: readable(STATUS[form.status]?.color) }" />
+                </template>
+                <template #option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section avatar>
+                      <q-icon name="circle" size="14px" :style="{ color: readable(scope.opt.color) }" />
+                    </q-item-section>
+                    <q-item-section>{{ scope.opt.label }}</q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+
+              <q-field
+                v-else
+                readonly
+                outlined
+                stack-label
+                label="Status"
+                :hint="isEdit ? undefined : `Todo chamado inicia como ${STATUS[STATUS_OPEN].label}`"
+              >
+                <template #prepend><q-icon name="flag_circle" /></template>
+                <template #control>
+                  <div class="self-center full-width no-outline" tabindex="0">
+                    <StatusChip
+                      :label="currentStatus.label"
+                      :color="currentStatus.color"
+                      :icon="currentStatus.icon"
+                    />
+                  </div>
+                </template>
+              </q-field>
+            </div>
+
             <div class="col-12 col-sm-6">
               <q-select
                 v-model="form.departmentId"
@@ -137,30 +195,6 @@
                 </template>
               </q-select>
             </div>
-
-            <!-- Somente o administrador altera o status pela edição -->
-            <div v-if="isEdit && auth.isAdmin" class="col-12 col-sm-6">
-              <q-select
-                v-model="form.status"
-                :options="statusOptions"
-                emit-value
-                map-options
-                outlined
-                label="Status"
-              >
-                <template #prepend>
-                  <q-icon name="circle" :style="{ color: readable(STATUS[form.status]?.color) }" />
-                </template>
-                <template #option="scope">
-                  <q-item v-bind="scope.itemProps">
-                    <q-item-section avatar>
-                      <q-icon name="circle" size="14px" :style="{ color: readable(scope.opt.color) }" />
-                    </q-item-section>
-                    <q-item-section>{{ scope.opt.label }}</q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-            </div>
           </div>
         </q-card-section>
 
@@ -191,12 +225,14 @@ import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalogStore } from '@/stores/catalog'
+import StatusChip from '@/components/StatusChip.vue'
 import { useReadableColor } from '@/composables/useReadableColor'
 import {
   PRIORITY,
   STATUS,
   STATUS_OPEN,
   apiErrorMessage,
+  formatDateTime,
   softColorStyle,
   toOptions
 } from '@/utils/ticketMeta'
@@ -220,6 +256,11 @@ const loading = ref(false)
 const saving = ref(false)
 const formRef = ref(null)
 
+// Data de abertura (somente leitura): agora, na criação; a do chamado, na edição
+const createdAt = ref(new Date())
+const createdAtLabel = computed(() => formatDateTime(createdAt.value))
+const currentStatus = computed(() => STATUS[form.status])
+
 const form = reactive({
   departmentId: auth.user?.departmentId ?? null,
   itemName: '',
@@ -239,6 +280,8 @@ async function loadTicket() {
     router.replace({ name: 'ticket-details', params: { id: data.id } })
     return
   }
+
+  createdAt.value = data.createdAt
 
   Object.assign(form, {
     departmentId: data.departmentId,
