@@ -18,7 +18,11 @@ export default defineRouter(function ({ store }) {
     : (import.meta.env.QUASAR_VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory)
 
   const Router = createRouter({
-    scrollBehavior: () => ({ left: 0, top: 0 }),
+    scrollBehavior: (to, from, savedPosition) => {
+      // Diálogos por rota abrem sobre a listagem: mantém a posição do scroll
+      if (to.meta.keepScroll && from.meta.keepScroll) return false
+      return savedPosition || { left: 0, top: 0 }
+    },
     routes,
 
     // Leave this as is and make changes in quasar.conf.js instead!

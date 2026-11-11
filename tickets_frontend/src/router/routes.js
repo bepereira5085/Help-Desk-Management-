@@ -15,21 +15,29 @@ const routes = [
         component: () => import('@/pages/TicketsListPage.vue'),
         // Diálogos abertos por rota, sobre a listagem
         children: [
-          { path: '', name: 'tickets', component: { render: () => null } },
+          {
+            path: '',
+            name: 'tickets',
+            component: { render: () => null },
+            meta: { keepScroll: true }
+          },
           {
             path: 'tickets/new',
             name: 'ticket-new',
-            component: () => import('@/components/TicketInfoDialog.vue')
+            component: () => import('@/components/TicketInfoDialog.vue'),
+            meta: { keepScroll: true }
           },
           {
             path: 'tickets/:id',
             name: 'ticket-details',
-            component: () => import('@/components/TicketDetailsDialog.vue')
+            component: () => import('@/components/TicketDetailsDialog.vue'),
+            meta: { keepScroll: true }
           },
           {
             path: 'tickets/:id/edit',
             name: 'ticket-edit',
-            component: () => import('@/components/TicketInfoDialog.vue')
+            component: () => import('@/components/TicketInfoDialog.vue'),
+            meta: { keepScroll: true }
           }
         ]
       },
