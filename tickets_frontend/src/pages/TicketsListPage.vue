@@ -149,7 +149,7 @@
       <!-- Listagem: 3 cards por linha no desktop -->
       <div class="relative-position" style="min-height: 200px">
         <div v-if="tickets.length" class="row q-col-gutter-md">
-          <div v-for="ticket in tickets" :key="ticket.id" class="col-12 col-sm-6 col-md-4">
+          <div v-for="ticket in pageTickets" :key="ticket.id" class="col-12 col-sm-6 col-md-4">
             <TicketCard :ticket="ticket" @click="openDetails" />
           </div>
         </div>
@@ -162,6 +162,15 @@
 
         <q-inner-loading :showing="loading" />
       </div>
+
+      <!-- Paginação -->
+      <ListPagination
+        v-if="tickets.length"
+        v-model:page="page"
+        v-model:per-page="perPage"
+        :total="tickets.length"
+        class="q-mt-lg"
+      />
     </div>
 
     <!-- Diálogos por rota (novo / detalhes / edição) -->
@@ -176,6 +185,7 @@ import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalogStore } from '@/stores/catalog'
+import ListPagination from '@/components/ListPagination.vue'
 import StatCard from '@/components/StatCard.vue'
 import TicketCard from '@/components/TicketCard.vue'
 import { PRIORITY, STATUS, apiErrorMessage, toOptions } from '@/utils/ticketMeta'
@@ -201,6 +211,15 @@ const priorityToggle = [
 const tickets = ref([])
 const statsSource = ref([]) // todos os chamados visíveis (sem filtros), para os contadores
 const loading = ref(false)
+
+// Paginação (feita no front): 20 cards por página por padrão
+const page = ref(1)
+const perPage = ref(20)
+
+const pageTickets = computed(() => {
+  const start = (page.value - 1) * perPage.value
+  return tickets.value.slice(start, start + perPage.value)
+})
 
 const DEFAULT_FILTERS = {
   itemName: '',
@@ -269,6 +288,7 @@ async function withLoading(task) {
 function loadTickets() {
   return withLoading(async () => {
     tickets.value = await fetchTickets(buildParams())
+    page.value = 1
   })
 }
 
