@@ -151,7 +151,7 @@
     </div>
 
     <!-- Diálogos por rota (novo / detalhes / edição) -->
-    <router-view @saved="load" />
+    <router-view @saved="refreshAll" />
   </q-page>
 </template>
 
@@ -185,7 +185,7 @@ const priorityToggle = [
 ]
 
 const tickets = ref([])
-const allTickets = ref([]) // sem filtros, para os contadores do cabeçalho
+const statsSource = ref([]) // todos os chamados visíveis (sem filtros), para os contadores
 const loading = ref(false)
 
 const filters = reactive({
@@ -202,9 +202,9 @@ const hasFilters = computed(
 )
 
 const stats = computed(() => {
-  const result = { total: allTickets.value.length }
+  const result = { total: statsSource.value.length }
   statusOptions.forEach((s) => {
-    result[s.value] = allTickets.value.filter((t) => t.status === s.value).length
+    result[s.value] = statsSource.value.filter((t) => t.status === s.value).length
   })
   return result
 })
@@ -225,15 +225,15 @@ function buildParams() {
 }
 
 // A ordenação (prioridade Urgente → Baixa e, em seguida, data mais recente) vem do backend
-async function load() {
+async function fetchTickets(params = {}) {
+  const { data } = await api.get('/tickets', { params })
+  return data
+}
+
+async function withLoading(task) {
   loading.value = true
   try {
-    const requests = [api.get('/tickets', { params: buildParams() })]
-    if (hasFilters.value) requests.push(api.get('/tickets'))
-
-    const [filtered, all] = await Promise.all(requests)
-    tickets.value = filtered.data
-    allTickets.value = all ? all.data : filtered.data
+    await task()
   } catch (error) {
     $q.notify({ type: 'negative', message: apiErrorMessage(error, 'Erro ao carregar chamados.') })
   } finally {
@@ -241,14 +241,35 @@ async function load() {
   }
 }
 
+// Mudança de filtro: busca apenas a listagem filtrada (os contadores não mudam)
+function loadTickets() {
+  return withLoading(async () => {
+    tickets.value = await fetchTickets(buildParams())
+  })
+}
+
+// Abertura da página ou chamado criado/editado/cancelado: atualiza listagem e contadores.
+// Sem filtros ativos, uma única requisição serve para os dois.
+function refreshAll() {
+  return withLoading(async () => {
+    if (!hasFilters.value) {
+      tickets.value = statsSource.value = await fetchTickets()
+      return
+    }
+    const [filtered, all] = await Promise.all([fetchTickets(buildParams()), fetchTickets()])
+    tickets.value = filtered
+    statsSource.value = all
+  })
+}
+
 function openDetails(ticket) {
   router.push({ name: 'ticket-details', params: { id: ticket.id } })
 }
 
-watch(filters, load)
+watch(filters, loadTickets)
 
 onMounted(() => {
-  load()
+  refreshAll()
   catalog.load().catch(() => {})
 })
 </script>
