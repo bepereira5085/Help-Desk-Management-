@@ -122,14 +122,28 @@
           {{ tickets.length }} chamado(s) — ordenados por prioridade e data
         </div>
         <q-space />
-        <q-btn
-          unelevated
-          no-caps
-          color="primary"
-          icon="add"
-          label="Novo chamado"
-          :to="{ name: 'ticket-new' }"
-        />
+        <div class="row items-center q-gutter-sm">
+          <q-btn
+            flat
+            no-caps
+            :color="actionColor"
+            icon="filter_alt_off"
+            label="Limpar filtros"
+            :disable="!hasFilters"
+            @click="clearFilters"
+          />
+          <q-btn flat round :color="actionColor" icon="refresh" :loading="loading" @click="refreshAll">
+            <q-tooltip>Recarregar</q-tooltip>
+          </q-btn>
+          <q-btn
+            unelevated
+            no-caps
+            color="primary"
+            icon="add"
+            label="Novo chamado"
+            :to="{ name: 'ticket-new' }"
+          />
+        </div>
       </div>
 
       <!-- Listagem: 3 cards por linha no desktop -->
@@ -188,13 +202,23 @@ const tickets = ref([])
 const statsSource = ref([]) // todos os chamados visíveis (sem filtros), para os contadores
 const loading = ref(false)
 
-const filters = reactive({
+const DEFAULT_FILTERS = {
   itemName: '',
   status: 0,
   priority: 0,
   date: null,
   departmentId: null
-})
+}
+
+const filters = reactive({ ...DEFAULT_FILTERS })
+
+// O watch em "filters" dispara uma única vez e recarrega a listagem
+function clearFilters() {
+  Object.assign(filters, DEFAULT_FILTERS)
+}
+
+// A cor primária é escura demais para botões "flat" sobre o fundo do modo escuro
+const actionColor = computed(() => ($q.dark.isActive ? 'white' : 'primary'))
 
 const hasFilters = computed(
   () =>
