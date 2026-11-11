@@ -42,10 +42,10 @@ export function resolveColor(color) {
 }
 
 /** Estilo "suave": texto na cor, fundo e borda na mesma cor com opacidade reduzida */
-export function softColorStyle(value) {
+export function softColorStyle(value, textColor) {
   const color = resolveColor(value)
   return {
-    color,
+    color: textColor ?? color,
     backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)`,
     borderColor: `color-mix(in srgb, ${color} 35%, transparent)`
   }

@@ -1,7 +1,7 @@
 <template>
   <q-card flat bordered class="stat-card" :style="{ borderBottomColor: cssColor }">
     <q-card-section class="q-py-sm q-px-md">
-      <div class="text-caption text-weight-bold text-uppercase" :style="{ color: cssColor }">
+      <div class="text-caption text-weight-bold text-uppercase" :style="{ color: textColor }">
         {{ label }}
       </div>
       <div class="text-h5 text-weight-bold">{{ value }}</div>
@@ -11,6 +11,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useReadableColor } from '@/composables/useReadableColor'
 import { resolveColor } from '@/utils/ticketMeta'
 
 const props = defineProps({
@@ -19,7 +20,9 @@ const props = defineProps({
   color: { type: String, default: '#616161' }
 })
 
-const cssColor = computed(() => resolveColor(props.color))
+const readable = useReadableColor()
+const cssColor = computed(() => resolveColor(props.color)) // borda
+const textColor = computed(() => readable(props.color)) // rótulo, legível no modo escuro
 </script>
 
 <style scoped>

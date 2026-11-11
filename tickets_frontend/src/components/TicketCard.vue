@@ -21,7 +21,7 @@
       <div class="text-h6 ellipsis">{{ ticket.itemName }}</div>
       <div class="row items-center q-gutter-x-md text-caption text-grey-7">
         <span class="row items-center no-wrap">
-          <q-icon name="apartment" class="q-mr-xs" :style="{ color: resolveColor(ticket.departmentColor) }" />
+          <q-icon name="apartment" class="q-mr-xs" :style="{ color: readable(ticket.departmentColor) }" />
           {{ ticket.departmentName }}
         </span>
         <span class="row items-center no-wrap">
@@ -58,6 +58,7 @@
 <script setup>
 import { computed } from 'vue'
 import StatusChip from '@/components/StatusChip.vue'
+import { useReadableColor } from '@/composables/useReadableColor'
 import { PRIORITY, STATUS, formatDateTime, resolveColor } from '@/utils/ticketMeta'
 
 const props = defineProps({
@@ -65,6 +66,8 @@ const props = defineProps({
 })
 
 defineEmits(['click'])
+
+const readable = useReadableColor()
 
 const status = computed(() => STATUS[props.ticket.status])
 const priority = computed(() => PRIORITY[props.ticket.priority])

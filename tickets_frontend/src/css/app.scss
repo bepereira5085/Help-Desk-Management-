@@ -9,8 +9,26 @@ body.body--light {
   margin: 0 auto;
 }
 
-// A cor primária é escura: no modo escuro o item ativo de menu/lista precisa de uma cor clara
-body.body--dark .q-item.q-router-link--active,
-body.body--dark .q-item--active {
-  color: #90caf9;
+// A cor primária da marca é escura demais para texto, bordas e foco sobre o fundo escuro.
+// No modo escuro ela é clareada (vale para campos em foco, item ativo, toggles etc.);
+// os fundos "bg-primary" (botões, cabeçalho, avatar) continuam na cor da marca.
+body.body--dark {
+  --q-primary: #90caf9;
+
+  .bg-primary {
+    background: $primary !important;
+  }
+
+  // chip do usuário no cabeçalho: texto da marca sobre fundo branco
+  .q-header .q-chip.text-primary {
+    color: $primary !important;
+  }
+
+  // botões "flat"/"outline" e abas ficam brancos, como os demais botões
+  .q-btn--flat.text-primary,
+  .q-btn--outline.text-primary,
+  .q-tab.text-primary,
+  .q-tab__indicator.text-primary {
+    color: #ffffff !important;
+  }
 }

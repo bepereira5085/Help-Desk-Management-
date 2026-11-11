@@ -2,7 +2,11 @@
   <q-dialog v-model="open" persistent @hide="onHide">
     <q-card class="ticket-form-dialog">
       <q-card-section class="row items-center no-wrap">
-        <q-icon :name="isEdit ? 'edit_note' : 'add_circle'" size="28px" color="primary" />
+        <q-icon
+          :name="isEdit ? 'edit_note' : 'add_circle'"
+          size="28px"
+          :color="$q.dark.isActive ? 'white' : 'primary'"
+        />
         <div class="text-h6 q-ml-sm">
           {{ isEdit ? `Editar chamado #${route.params.id}` : 'Novo chamado' }}
         </div>
@@ -43,12 +47,12 @@
                 label="Prioridade *"
               >
                 <template #prepend>
-                  <q-icon name="flag" :style="{ color: resolveColor(PRIORITY[form.priority]?.color) }" />
+                  <q-icon name="flag" :style="{ color: readable(PRIORITY[form.priority]?.color) }" />
                 </template>
                 <template #option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section avatar>
-                      <q-icon name="flag" :style="{ color: resolveColor(scope.opt.color) }" />
+                      <q-icon name="flag" :style="{ color: readable(scope.opt.color) }" />
                     </q-item-section>
                     <q-item-section>{{ scope.opt.label }}</q-item-section>
                   </q-item>
@@ -113,7 +117,7 @@
                     removable
                     dense
                     :tabindex="scope.tabindex"
-                    :style="softColorStyle(scope.opt.color)"
+                    :style="softColorStyle(scope.opt.color, readable(scope.opt.color))"
                     class="tag-chip q-ma-xs"
                     @remove="scope.removeAtIndex(scope.index)"
                   >
@@ -123,11 +127,11 @@
                 <template #option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section avatar>
-                      <q-icon name="circle" size="14px" :style="{ color: resolveColor(scope.opt.color) }" />
+                      <q-icon name="circle" size="14px" :style="{ color: readable(scope.opt.color) }" />
                     </q-item-section>
                     <q-item-section>{{ scope.opt.name }}</q-item-section>
                     <q-item-section side>
-                      <q-icon v-if="scope.selected" name="check" color="primary" />
+                      <q-icon v-if="scope.selected" name="check" :color="$q.dark.isActive ? 'white' : 'primary'" />
                     </q-item-section>
                   </q-item>
                 </template>
@@ -145,12 +149,12 @@
                 label="Status"
               >
                 <template #prepend>
-                  <q-icon name="circle" :style="{ color: resolveColor(STATUS[form.status]?.color) }" />
+                  <q-icon name="circle" :style="{ color: readable(STATUS[form.status]?.color) }" />
                 </template>
                 <template #option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section avatar>
-                      <q-icon name="circle" size="14px" :style="{ color: resolveColor(scope.opt.color) }" />
+                      <q-icon name="circle" size="14px" :style="{ color: readable(scope.opt.color) }" />
                     </q-item-section>
                     <q-item-section>{{ scope.opt.label }}</q-item-section>
                   </q-item>
@@ -187,12 +191,12 @@ import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalogStore } from '@/stores/catalog'
+import { useReadableColor } from '@/composables/useReadableColor'
 import {
   PRIORITY,
   STATUS,
   STATUS_OPEN,
   apiErrorMessage,
-  resolveColor,
   softColorStyle,
   toOptions
 } from '@/utils/ticketMeta'
@@ -205,6 +209,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const catalog = useCatalogStore()
+const readable = useReadableColor()
 
 const isEdit = computed(() => !!route.params.id)
 const priorityOptions = toOptions(PRIORITY)

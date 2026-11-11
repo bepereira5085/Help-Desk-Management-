@@ -7,6 +7,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useReadableColor } from '@/composables/useReadableColor'
 import { softColorStyle } from '@/utils/ticketMeta'
 
 // Chip genérico: texto na cor informada sobre um fundo da mesma cor com opacidade reduzida.
@@ -18,7 +19,10 @@ const props = defineProps({
   dense: { type: Boolean, default: false }
 })
 
-const chipStyle = computed(() => softColorStyle(props.color))
+const readable = useReadableColor()
+
+// Texto clareado no modo escuro; fundo e borda mantêm a cor original
+const chipStyle = computed(() => softColorStyle(props.color, readable(props.color)))
 </script>
 
 <style scoped>
