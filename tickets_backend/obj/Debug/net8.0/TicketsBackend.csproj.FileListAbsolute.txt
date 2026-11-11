@@ -124,3 +124,4 @@ C:\Users\PICHAU\AppData\Local\Temp\tickets_verify\TicketsBackend.deps.json
 C:\Users\PICHAU\AppData\Local\Temp\tickets_verify\TicketsBackend.runtimeconfig.json
 C:\Users\PICHAU\AppData\Local\Temp\tickets_verify\TicketsBackend.dll
 C:\Users\PICHAU\AppData\Local\Temp\tickets_verify\TicketsBackend.pdb
+C:\Users\PICHAU\Desktop\facul\6 semestre\Ling. Prog\tickets_list\tickets_backend\obj\Debug\net8.0\TicketsBackend.sourcelink.json

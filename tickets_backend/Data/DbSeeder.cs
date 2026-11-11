@@ -27,33 +27,41 @@ public static class DbSeeder
             db.SaveChanges();
         }
 
-        if (!db.Users.Any())
-        {
-            var ti = db.Departments.First(d => d.Name == "TI");
-            var rh = db.Departments.FirstOrDefault(d => d.Name == "RH") ?? ti;
-
-            db.Users.AddRange(
-                new User
-                {
-                    Login = "admin",
-                    Name = "Administrador",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-                    DepartmentId = ti.Id,
-                    IsAdmin = true
-                },
-                new User
-                {
-                    Login = "usuario",
-                    Name = "Usuário Comum",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("usuario123"),
-                    DepartmentId = rh.Id,
-                    IsAdmin = false
-                }
-            );
-            db.SaveChanges();
-        }
+        SeedUsers(db);
 
         SeedDemoTickets(db, 100);
+    }
+
+    // Usuários iniciais: (login, senha, nome, setor, é admin)
+    private static readonly (string Login, string Password, string Name, string Department, bool IsAdmin)[] SeedUserList =
+    {
+        ("admin", "admin123", "Administrador", "TI", true),
+        ("usuario", "usuario123", "Usuário Comum", "RH", false),
+        ("maria", "maria123", "Maria Souza", "Financeiro", false),
+        ("joao", "joao123", "João Pereira", "TI", false),
+        ("ana", "ana123", "Ana Lima", "RH", false)
+    };
+
+    /// <summary>Cria os usuários iniciais que ainda não existem (verifica pelo login).</summary>
+    private static void SeedUsers(AppDbContext db)
+    {
+        var existingLogins = db.Users.Select(u => u.Login).ToHashSet();
+        var departments = db.Departments.ToList();
+
+        foreach (var seed in SeedUserList.Where(u => !existingLogins.Contains(u.Login)))
+        {
+            var department = departments.FirstOrDefault(d => d.Name == seed.Department) ?? departments.First();
+            db.Users.Add(new User
+            {
+                Login = seed.Login,
+                Name = seed.Name,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(seed.Password),
+                DepartmentId = department.Id,
+                IsAdmin = seed.IsAdmin
+            });
+        }
+
+        db.SaveChanges();
     }
 
     // Exemplos de itens: (nome do item, descrições possíveis, tags relacionadas)
@@ -136,8 +144,9 @@ public static class DbSeeder
         if (count <= 0) return;
 
         var random = new Random(2026); // semente fixa: sempre gera os mesmos dados
-        var users = db.Users.ToList();
-        var departments = db.Departments.ToList();
+        // Os chamados de exemplo são distribuídos entre os usuários comuns
+        var users = db.Users.Where(u => !u.IsAdmin).ToList();
+        if (users.Count == 0) users = db.Users.ToList();
         var tagsByName = db.Tags.ToDictionary(t => t.Name, t => t.Id);
         var now = DateTime.Now;
 
@@ -162,10 +171,12 @@ public static class DbSeeder
                 .Select(name => tagsByName[name])
                 .ToList();
 
+            var user = users[i % users.Count]; // reparte igualmente entre eles
+
             tickets.Add(new Ticket
             {
-                UserId = users[random.Next(users.Count)].Id,
-                DepartmentId = departments[random.Next(departments.Count)].Id,
+                UserId = user.Id,
+                DepartmentId = user.DepartmentId, // setor de origem de quem abriu
                 CreatedAt = createdAt,
                 ItemName = demo.Item,
                 Description = demo.Descriptions[random.Next(demo.Descriptions.Length)],
