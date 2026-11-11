@@ -8,3 +8,9 @@ body.body--light {
   max-width: 1400px;
   margin: 0 auto;
 }
+
+// A cor primária é escura: no modo escuro o item ativo de menu/lista precisa de uma cor clara
+body.body--dark .q-item.q-router-link--active,
+body.body--dark .q-item--active {
+  color: #90caf9;
+}
