@@ -3,7 +3,7 @@
     flat
     bordered
     v-ripple
-    class="ticket-card cursor-pointer column full-height"
+    class="ticket-card cursor-pointer column no-wrap full-height"
     :style="{ borderLeftColor: resolveColor(priority.color) }"
     @click="$emit('click', ticket)"
   >
@@ -82,6 +82,10 @@ const priority = computed(() => PRIORITY[props.ticket.priority])
     box-shadow 0.15s ease;
 }
 
+.ticket-card {
+  min-width: 0;
+}
+
 .ticket-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
@@ -93,6 +97,7 @@ const priority = computed(() => PRIORITY[props.ticket.priority])
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .body--dark .ticket-card__description {

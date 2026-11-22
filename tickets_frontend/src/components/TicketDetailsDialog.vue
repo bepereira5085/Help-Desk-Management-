@@ -7,7 +7,7 @@
         <q-card-section class="row items-start no-wrap">
           <div class="col">
             <div class="text-caption text-grey-7">Chamado #{{ ticket.id }}</div>
-            <div class="text-h6">{{ ticket.itemName }}</div>
+            <div class="text-h6 ticket-dialog__title">{{ ticket.itemName }}</div>
           </div>
           <q-btn flat round dense icon="close" v-close-popup />
         </q-card-section>
@@ -211,5 +211,10 @@ onMounted(load)
 
 .ticket-dialog__description {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ticket-dialog__title {
+  overflow-wrap: anywhere;
 }
 </style>
