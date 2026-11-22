@@ -4,7 +4,9 @@ import { useAuthStore } from '@/stores/auth'
 
 // Em dev o Quasar faz proxy de /api para o backend (ver quasar.config.js -> devServer.proxy)
 const api = axios.create({
-  baseURL: import.meta.env.DEV ? '/api' : 'http://localhost:5193/api'
+  baseURL: import.meta.env.DEV
+    ? '/api'
+    : 'helpdeskbackend-fnb9emg5cchgaycg.westus3-01.azurewebsites.net'
 })
 
 export default defineBoot(({ app, router, store }) => {
