@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 const api = axios.create({
   baseURL: import.meta.env.DEV
     ? '/api'
-    : 'https://helpdeskbackend-fnb9emg5cchgaycg.westus3-01.azurewebsites.net'
+    : 'https://helpdeskbackend-fnb9emg5cchgaycg.westus3-01.azurewebsites.net/api'
 })
 
 export default defineBoot(({ app, router, store }) => {
